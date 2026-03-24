@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Objects;
 
 public abstract class Product {
@@ -5,7 +7,9 @@ public abstract class Product {
     private String title;
     private float price;
     protected String category;
-    private static int counter = 0;
+    private static int counter = 0; 
+
+    HashMap<String, ArrayList<Product>> map = new HashMap<>();
 
     private int generateId() {
         return ++counter;
