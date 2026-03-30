@@ -1,15 +1,14 @@
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Objects;
 
 public abstract class Product {
     private int id;
     private String title;
     private float price;
     protected String category;
-    private static int counter = 0; 
+    private static int counter = 0;
 
-    HashMap<String, ArrayList<Product>> map = new HashMap<>();
+    private static HashMap<String, ArrayList<Product>> map = new HashMap<>();
 
     private int generateId() {
         return ++counter;
@@ -20,10 +19,28 @@ public abstract class Product {
         this.title = title;
         this.price = price;
         this.category = category;
+
+        addToMap(); 
     }
 
-    public Product() {
+
+    private void addToMap() {
+        map.putIfAbsent(category, new ArrayList<>());
+        map.get(category).add(this);
     }
+
+
+    public static void showAllProducts() {
+        for (String key : map.keySet()) {
+            System.out.println("Категория: " + key);
+            for (Product product : map.get(key)) {
+                product.showInfo();
+            }
+            System.out.println();
+        }
+    }
+
+    public abstract void showInfo();
 
     public int getId() {
         return id;
@@ -35,44 +52,5 @@ public abstract class Product {
 
     public float getPrice() {
         return price;
-    }
-
-    public String getCategory() {
-        return category;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public void setPrice(float price) {
-        this.price = price;
-    }
-
-    public void setCategory(String category) {
-        this.category = category;
-    }
-
-    public abstract void showInfo();
-
-    @Override
-    public String toString() {
-        return "Product{id=" + id +
-                ", title='" + title + '\'' +
-                ", price=" + price +
-                ", category='" + category + '\'' +
-                '}';
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Product product)) return false;
-        return id == product.id;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
     }
 }
