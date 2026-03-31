@@ -1,12 +1,5 @@
 public class Main {
     public static void main(String[] args) {
-
-        //new Electronics("Ноутбук", 2500.0f, 24);
-        //new Food("Яблоко", 2.5f, 52);
-        //new Electronics("Телефон", 1200.0f, 12);
-
-        //Product.showAllProducts();
-        
         Category electronics = new Category("Electronics");
         Category food = new Category("Food");
         Category clothing = new Category("Clothing");
@@ -34,16 +27,16 @@ public class Main {
 
         System.out.println();
         clothing.showCategory();
+
+        new Electronics("Macbook pro", 2599.0f, 24);
+        new Food("Яблоко", 2.5f, 52);
+        new Electronics("Iphone 17", 799.0f, 12);
+
+        Product.showAllProducts();
     }
 }
 
 // TODO 
-// должен быть класс для категорий в нем должны быть: 
-// поле name 
-// список list< > который будет содержать категории 
-// добавить методы чтобы добавлять новую категорию (принимается один параметр)
-// еще один метод showCategory чтобы показать категорию 
-
-// TODO 
-// новый класс каталог (хранит сами категории(список базовый категорий))
-// добавить счетчик главных категорий 
+// в классах переопределить этот метод (@Override)
+// создать несколько объектов разных типов (товары) для каждой категории и их положить в список list (add)
+//сделать так чтобы работал showInfo то есть после добавления определенного товара этот метод выводил в консоль то что было добавлено
