@@ -1,9 +1,13 @@
 public class Electronics extends Product {
-    private int warranty;
+    private int warrantyMonths;
 
-    public Electronics(String title, float price, int warranty) {
+    public Electronics(String title, float price, int warrantyMonths) {
         super(title, price, "Electronics");
-        this.warranty = warranty;
+        this.warrantyMonths = warrantyMonths;
+    }
+
+    public int getWarrantyMonths() {
+        return warrantyMonths;
     }
 
     @Override
@@ -11,6 +15,17 @@ public class Electronics extends Product {
         System.out.println("Электроника: " + getTitle()
                 + ", цена: " + getPrice()
                 + ", id: " + getId()
-                + ", гарантия: " + warranty);
+                + ", гарантия: " + warrantyMonths + " месяцев");
+    }
+
+    @Override
+    public String toString() {
+        return "Electronics{" +
+                "warrantyMonths=" + warrantyMonths +
+                ", id=" + getId() +
+                ", title='" + getTitle() + '\'' +
+                ", price=" + getPrice() +
+                ", category='" + category + '\'' +
+                '}';
     }
 }

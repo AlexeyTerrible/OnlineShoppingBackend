@@ -18,6 +18,10 @@ public class Category {
         categories.add(category);
     }
 
+    public List<Category> getSubCategories() {
+        return categories;
+    }
+
     public void showCategory() {
         System.out.println("Категория: " + name);
 
@@ -25,9 +29,10 @@ public class Category {
             System.out.println("Подкатегорий нет");
         } else {
             System.out.println("Подкатегории:");
-            for (Category category : categories) {
-                System.out.println("- " + category.getName());
-            }
+            // Используем StreamAPI
+            categories.stream()
+                    .map(category -> "- " + category.getName())
+                    .forEach(System.out::println);
         }
     }
 }

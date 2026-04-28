@@ -1,6 +1,6 @@
 import java.util.ArrayList;
 import java.util.List;
-
+import java.util.stream.Collectors;
 
 public class Catalog {
     private List<Category> baseCategories;
@@ -25,14 +25,19 @@ public class Catalog {
         return mainCategoryCount;
     }
 
-    // показать все главные категории
+    // показать все главные категории (используем StreamAPI)
     public void showCatalog() {
         System.out.println("Каталог:");
-        for (Category category : baseCategories) {
-            System.out.println("- " + category.getName());
-        }
+        baseCategories.stream()
+                .map(category -> "- " + category.getName())
+                .forEach(System.out::println);
         System.out.println("Количество главных категорий: " + mainCategoryCount);
     }
+
+    // Получить все подкатегории через StreamAPI
+    public List<Category> getAllSubCategories() {
+        return baseCategories.stream()
+                .flatMap(category -> category.getSubCategories().stream())
+                .collect(Collectors.toList());
+    }
 }
-
-
