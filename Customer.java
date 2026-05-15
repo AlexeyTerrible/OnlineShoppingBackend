@@ -1,11 +1,12 @@
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.function.Predicate;
 
 public class Customer extends Person {
     private double wallet;
     private List<Product> cart;
-    private List<Order> orderHistory; // История заказов
+    private List<Order> orderHistory;
 
     public Customer(String n, String s, int b) {
         super(n, s, b);
@@ -32,7 +33,6 @@ public class Customer extends Person {
         }
     }
 
-    // Снятие со счета (покупка)
     public boolean withdraw(double q) {
         if (q <= 0 || q > wallet) return false;
         wallet -= q;
@@ -61,7 +61,6 @@ public class Customer extends Person {
         }
     }
 
-    // Добавление продукта в корзину
     public void addProduct(Product p) {
         if (p != null) {
             cart.add(p);
@@ -69,7 +68,6 @@ public class Customer extends Person {
         }
     }
 
-    // Удаление продукта из корзины
     public boolean removeProduct(Product p) {
         if (p != null && cart.remove(p)) {
             System.out.println("Товар \"" + p.getTitle() + "\" удален из корзины");
@@ -78,7 +76,6 @@ public class Customer extends Person {
         return false;
     }
 
-    // Удаление продукта по индексу
     public boolean removeProduct(int index) {
         if (index >= 0 && index < cart.size()) {
             Product removed = cart.remove(index);
@@ -88,7 +85,6 @@ public class Customer extends Person {
         return false;
     }
 
-    // Показать содержимое корзины (StreamAPI)
     public void showCart() {
         if (cart.isEmpty()) {
             System.out.println("Корзина пуста");
@@ -101,51 +97,86 @@ public class Customer extends Person {
         }
     }
 
-    // Подсчет общей стоимости корзины (StreamAPI)
-    public double getCartTotal() {
-        return cart.stream()
-                .mapToDouble(Product::getPrice)
-                .sum();
+    // STRATEGY PATTERN - можно менять стратегию подсчета цены
+    @FunctionalInterface
+    public interface PricingStrategy {
+        double calculateTotal(List<Product> products);
     }
 
-    // Оформление покупки с сохранением в историю заказов
+    public double getCartTotal() {
+        return getCartTotal(products -> products.stream()
+                .mapToDouble(Product::getPrice)
+                .sum());
+    }
+
+    // STRATEGY PATTERN - метод принимает стратегию
+    public double getCartTotal(PricingStrategy strategy) {
+        return strategy.calculateTotal(cart);
+    }
+
+    // STRATEGY PATTERN - фильтрация с разными стратегиями
+    public List<Product> filterProducts(Predicate<Product> filterStrategy) {
+        return cart.stream()
+                .filter(filterStrategy)
+                .collect(Collectors.toList());
+    }
+
+    // Оформление покупки с Immutable Order
     public boolean checkout() {
-        double total = getCartTotal();
-        if (total == 0) {
+        return checkout(products -> products.stream()
+                .mapToDouble(Product::getPrice)
+                .sum());
+    }
+
+    // STRATEGY PATTERN - checkout с разными стратегиями расчета
+    public boolean checkout(PricingStrategy strategy) {
+        double total = strategy.calculateTotal(cart);
+
+        if (cart.isEmpty()) {
             System.out.println("Корзина пуста. Нечего оплачивать.");
             return false;
         }
 
         if (hasEnoughMoney(total)) {
-            // Создаем заказ перед очисткой корзины
-            Order order = new Order(new ArrayList<>(cart), total);
-            orderHistory.add(order);
+            // Создаем Immutable Order через Builder
+            Order order = new Order.Builder()
+                    .products(new ArrayList<>(cart))
+                    .success(true)
+                    .message("Заказ успешно оформлен")
+                    .build();
 
+            orderHistory.add(order);
             withdraw(total);
             cart.clear();
-            System.out.println("Покупка оформлена! Списано: $" + total);
+
+            System.out.println("Покупка оформлена! " + order.getMessage());
+            System.out.println("Номер заказа: #" + order.getOrderId());
+            System.out.println("Списано: $" + order.getTotalAmount());
             return true;
         } else {
-            System.out.println("Недостаточно средств. Нужно: $" + total
-                    + ", Доступно: $" + wallet);
+            // Создаем неуспешный заказ для истории
+            Order failedOrder = new Order.Builder()
+                    .products(new ArrayList<>(cart))
+                    .success(false)
+                    .message("Недостаточно средств. Нужно: $" + total +
+                            ", Доступно: $" + wallet)
+                    .build();
+
+            orderHistory.add(failedOrder);
+            System.out.println(failedOrder.getMessage());
             return false;
         }
     }
 
-    // Получить корзину
     public List<Product> getCart() {
         return cart;
     }
 
-    // Очистить корзину
     public void clearCart() {
         cart.clear();
         System.out.println("Корзина очищена");
     }
 
-    // РАСШИРЕННОЕ МЕНЮ
-
-    // 1. Показать доступность товаров (StreamAPI)
     public void showProductAvailability() {
         System.out.println("\n=== Доступность товаров ===");
         Product.getAllProducts().stream()
@@ -158,7 +189,6 @@ public class Customer extends Person {
                 });
     }
 
-    // 2. Показать историю заказов (StreamAPI)
     public void showOrderHistory() {
         if (orderHistory.isEmpty()) {
             System.out.println("\nИстория заказов пуста");
@@ -170,7 +200,9 @@ public class Customer extends Person {
                 .forEach(order -> {
                     System.out.println("Заказ #" + order.getOrderId() +
                             " | Дата: " + order.getOrderDate() +
-                            " | Сумма: $" + order.getTotalAmount());
+                            " | Сумма: $" + order.getTotalAmount() +
+                            " | Статус: " + (order.isSuccess() ? "УСПЕХ" : "ОТКАЗ"));
+                    System.out.println("  Сообщение: " + order.getMessage());
                     System.out.println("Товары:");
                     order.getProducts().stream()
                             .forEach(p -> System.out.println("  - " + p.getTitle() + " | $" + p.getPrice()));
@@ -178,17 +210,16 @@ public class Customer extends Person {
                 });
     }
 
-    // 3. Фильтрация товаров по цене (StreamAPI)
     public void showFilteredProducts(double maxPrice) {
         System.out.println("\n=== Товары дешевле $" + maxPrice + " ===");
-        Product.getAllProducts().stream()
-                .filter(p -> p.getPrice() <= maxPrice)
+        // STRATEGY PATTERN - используем Predicate как стратегию фильтрации
+        filterProducts(p -> p.getPrice() <= maxPrice)
                 .forEach(p -> System.out.println(p.getTitle() + " - $" + p.getPrice()));
     }
 
-    // 4. Поиск товаров по названию (StreamAPI)
     public void searchProducts(String keyword) {
         System.out.println("\n=== Поиск товаров: \"" + keyword + "\" ===");
+        // STRATEGY PATTERN - используем Predicate как стратегию поиска
         List<Product> found = Product.getAllProducts().stream()
                 .filter(p -> p.getTitle().toLowerCase().contains(keyword.toLowerCase()))
                 .collect(Collectors.toList());
@@ -200,7 +231,6 @@ public class Customer extends Person {
         }
     }
 
-    // 5. Статистика по корзине (StreamAPI)
     public void showCartStatistics() {
         if (cart.isEmpty()) {
             System.out.println("\nКорзина пуста, статистика недоступна");
@@ -227,7 +257,6 @@ public class Customer extends Person {
         System.out.println("Самый дорогой: " + (mostExpensive != null ? mostExpensive.getTitle() + " ($" + mostExpensive.getPrice() + ")" : "N/A"));
     }
 
-    // Получить историю заказов
     public List<Order> getOrderHistory() {
         return orderHistory;
     }

@@ -10,8 +10,28 @@ public abstract class Product {
     private float price;
     protected String category;
     private static int counter = 0;
-
     private static HashMap<String, ArrayList<Product>> map = new HashMap<>();
+
+    // FACTORY PATTERN - Factory Method
+    private static class ProductFactory {
+        public static Product createProduct(String type, String title, float price, int param) {
+            switch (type) {
+                case "Electronics":
+                    return new Electronics(title, price, param);
+                case "Food":
+                    return new Food(title, price, param);
+                default:
+                    throw new IllegalArgumentException("Unknown product type: " + type);
+            }
+        }
+    }
+
+    // Public factory method
+    public static Product create(String type, String title, float price, int param) {
+        Product product = ProductFactory.createProduct(type, title, price, param);
+        // Продукт автоматически добавляется в map через конструктор
+        return product;
+    }
 
     private int generateId() {
         return ++counter;
@@ -22,7 +42,6 @@ public abstract class Product {
         this.title = title;
         this.price = price;
         this.category = category;
-
         addToMap();
     }
 
@@ -31,7 +50,6 @@ public abstract class Product {
         map.get(category).add(this);
     }
 
-    // StreamAPI версия показа всех продуктов
     public static void showAllProducts() {
         map.forEach((key, products) -> {
             System.out.println("Категория: " + key);
@@ -40,19 +58,16 @@ public abstract class Product {
         });
     }
 
-    // Получить все продукты как список (для StreamAPI)
     public static List<Product> getAllProducts() {
         return map.values().stream()
                 .flatMap(ArrayList::stream)
                 .collect(Collectors.toList());
     }
 
-    // Фильтрация продуктов по категории (StreamAPI)
     public static List<Product> getProductsByCategory(String category) {
         return map.getOrDefault(category, new ArrayList<>());
     }
 
-    // Статистика по ценам (StreamAPI)
     public static void showPriceStatistics() {
         List<Product> allProducts = getAllProducts();
         if (allProducts.isEmpty()) return;

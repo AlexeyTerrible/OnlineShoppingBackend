@@ -1,5 +1,10 @@
+import java.util.Scanner;
+
 public class Main {
     public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+
+        // Инициализация категорий
         Category electronics = new Category("Electronics");
         Category food = new Category("Food");
         Category clothing = new Category("Clothing");
@@ -17,78 +22,184 @@ public class Main {
         catalog.addBaseCategory(food);
         catalog.addBaseCategory(clothing);
 
-        catalog.showCatalog();
+        // FACTORY PATTERN - создаем продукты через фабрику
+        Electronics macbook = (Electronics) Product.create("Electronics", "Macbook pro", 2599.0f, 24);
+        Food apple = (Food) Product.create("Food", "Яблоко", 2.5f, 52);
+        Electronics iphone = (Electronics) Product.create("Electronics", "Iphone 17", 799.0f, 12);
+        Food bread = (Food) Product.create("Food", "Хлеб", 1.2f, 150);
+        Food banana = (Food) Product.create("Food", "Банан", 1.8f, 95);
+        Electronics headphones = (Electronics) Product.create("Electronics", "Наушники Sony", 149.0f, 12);
 
-        System.out.println();
-        electronics.showCategory();
-
-        System.out.println();
-        food.showCategory();
-
-        System.out.println();
-        clothing.showCategory();
-
-        // Создаем продукты
-        Electronics macbook = new Electronics("Macbook pro", 2599.0f, 24);
-        Food apple = new Food("Яблоко", 2.5f, 52);
-        Electronics iphone = new Electronics("Iphone 17", 799.0f, 12);
-        Food bread = new Food("Хлеб", 1.2f, 150);
-        Food banana = new Food("Банан", 1.8f, 95);
-        Electronics headphones = new Electronics("Наушники Sony", 149.0f, 12);
-
-        // Вывод всех продуктов
-        System.out.println("\n=== Все продукты ===");
-        Product.showAllProducts();
-
-        // Тестирование Customer с новыми возможностями
-        System.out.println("\n=== Тестирование Customer ===");
-
+        // Создаем покупателя
         Customer customer = new Customer("Иван", "Петров", 1990, 1000.0);
-        System.out.println("Создан покупатель: " + customer);
 
-        // Добавляем товары в корзину
-        System.out.println("\n--- Добавление товаров в корзину ---");
+        // Добавляем начальные товары в корзину
         customer.addProduct(apple);
         customer.addProduct(bread);
         customer.addProduct(iphone);
         customer.addProduct(banana);
 
-        // Показываем корзину (StreamAPI)
-        System.out.println("\n--- Содержимое корзины (StreamAPI) ---");
-        customer.showCart();
+        boolean running = true;
 
-        // Статистика корзины (StreamAPI)
-        customer.showCartStatistics();
+        while (running) {
+            System.out.println("\n" + "=".repeat(50));
+            System.out.println("ГЛАВНОЕ МЕНЮ");
+            System.out.println("=".repeat(50));
+            System.out.println("1. Показать каталог");
+            System.out.println("2. Показать корзину");
+            System.out.println("3. Добавить товар в корзину");
+            System.out.println("4. Оформить заказ");
+            System.out.println("5. Показать историю заказов");
+            System.out.println("6. Статистика цен всех товаров");
+            System.out.println("7. Поиск товаров");
+            System.out.println("8. Фильтрация товаров по цене");
+            System.out.println("9. Показать доступность товаров");
+            System.out.println("10. Информация о покупателе");
+            System.out.println("11. Показать корзину со скидкой 10% (Strategy demo)");
+            System.out.println("0. Выйти из программы");
+            System.out.println("=".repeat(50));
+            System.out.print("Ваш выбор: ");
 
-        // Показываем доступность товаров (новое меню)
-        customer.showProductAvailability();
+            // Проверяем, есть ли ввод
+            if (!scanner.hasNextInt()) {
+                System.out.println("\nОшибка: введите число от 0 до 11");
+                scanner.nextLine(); // очистка некорректного ввода
+                continue;
+            }
 
-        // Поиск товаров (StreamAPI)
-        customer.searchProducts("iphone");
+            int choice = scanner.nextInt();
+            scanner.nextLine(); // очистка буфера после числа
 
-        // Фильтрация по цене (StreamAPI)
-        customer.showFilteredProducts(100.0);
+            try {
+                switch (choice) {
+                    case 1:
+                        System.out.println("\n=== КАТАЛОГ ===");
+                        catalog.showCatalog();
+                        System.out.println("\n--- Electronics ---");
+                        electronics.showCategory();
+                        System.out.println("\n--- Food ---");
+                        food.showCategory();
+                        System.out.println("\n--- Clothing ---");
+                        clothing.showCategory();
+                        break;
 
-        // Статистика цен (StreamAPI)
-        Product.showPriceStatistics();
+                    case 2:
+                        System.out.println("\n=== КОРЗИНА ===");
+                        customer.showCart();
+                        customer.showCartStatistics();
+                        break;
 
-        // Оформляем первый заказ
-        System.out.println("\n--- Оформление первой покупки ---");
-        customer.checkout();
+                    case 3:
+                        System.out.println("\n=== ДОБАВЛЕНИЕ ТОВАРА ===");
+                        System.out.println("Доступные товары:");
+                        System.out.println("1. Macbook pro - 2599.0 руб.");
+                        System.out.println("2. Яблоко - 2.5 руб.");
+                        System.out.println("3. Iphone 17 - 799.0 руб.");
+                        System.out.println("4. Хлеб - 1.2 руб.");
+                        System.out.println("5. Банан - 1.8 руб.");
+                        System.out.println("6. Наушники Sony - 149.0 руб.");
+                        System.out.print("Выберите товар (1-6): ");
 
-        // Добавляем еще товары
-        customer.addProduct(macbook);
-        customer.addProduct(headphones);
+                        if (!scanner.hasNextInt()) {
+                            System.out.println("Неверный выбор! Введите число от 1 до 6");
+                            scanner.nextLine();
+                            break;
+                        }
 
-        // Оформляем второй заказ
-        System.out.println("\n--- Оформление второй покупки ---");
-        customer.checkout();
+                        int productChoice = scanner.nextInt();
+                        scanner.nextLine();
 
-        // Показываем историю заказов (новое меню)
-        customer.showOrderHistory();
+                        switch (productChoice) {
+                            case 1: customer.addProduct(macbook); break;
+                            case 2: customer.addProduct(apple); break;
+                            case 3: customer.addProduct(iphone); break;
+                            case 4: customer.addProduct(bread); break;
+                            case 5: customer.addProduct(banana); break;
+                            case 6: customer.addProduct(headphones); break;
+                            default: System.out.println("Неверный выбор!");
+                        }
+                        break;
 
-        // Финальная информация
-        System.out.println("\n--- Финальная информация ---");
-        System.out.println(customer.toString());
+                    case 4:
+                        System.out.println("\n=== ОФОРМЛЕНИЕ ЗАКАЗА ===");
+                        customer.checkout();
+                        break;
+
+                    case 5:
+                        System.out.println("\n=== ИСТОРИЯ ЗАКАЗОВ ===");
+                        customer.showOrderHistory();
+                        break;
+
+                    case 6:
+                        System.out.println("\n=== СТАТИСТИКА ЦЕН ===");
+                        Product.showPriceStatistics();
+                        break;
+
+                    case 7:
+                        System.out.println("\n=== ПОИСК ТОВАРОВ ===");
+                        System.out.print("Введите название для поиска: ");
+                        String searchTerm = scanner.nextLine();
+                        customer.searchProducts(searchTerm);
+                        break;
+
+                    case 8:
+                        System.out.println("\n=== ФИЛЬТРАЦИЯ ПО ЦЕНЕ ===");
+                        System.out.print("Введите максимальную цену: ");
+                        if (!scanner.hasNextDouble()) {
+                            System.out.println("Ошибка: введите число");
+                            scanner.nextLine();
+                            break;
+                        }
+                        double maxPrice = scanner.nextDouble();
+                        scanner.nextLine();
+                        customer.showFilteredProducts(maxPrice);
+                        break;
+
+                    case 9:
+                        System.out.println("\n=== ДОСТУПНОСТЬ ТОВАРОВ ===");
+                        customer.showProductAvailability();
+                        break;
+
+                    case 10:
+                        System.out.println("\n=== ИНФОРМАЦИЯ О ПОКУПАТЕЛЕ ===");
+                        System.out.println(customer.toString());
+                        break;
+
+                    case 11:
+                        System.out.println("\n=== КОРЗИНА СО СКИДКОЙ 10% (Strategy Pattern) ===");
+                        customer.showCart();
+                        System.out.println("\nОбычная цена: $" + customer.getCartTotal());
+
+                        double discountedTotal = customer.getCartTotal(products ->
+                                products.stream()
+                                        .mapToDouble(Product::getPrice)
+                                        .sum() * 0.9
+                        );
+                        System.out.println("Цена со скидкой 10%: $" + String.format("%.2f", discountedTotal));
+                        break;
+
+                    case 0:
+                        System.out.println("\nСпасибо за использование программы! До свидания!");
+                        running = false;
+                        break;
+
+                    default:
+                        System.out.println("\nНеверный выбор! Пожалуйста, выберите пункт от 0 до 11.");
+                }
+            } catch (Exception e) {
+                System.out.println("Произошла ошибка: " + e.getMessage());
+                scanner.nextLine(); // очистка буфера при ошибке
+            }
+        }
+
+        // Безопасное закрытие сканера
+        try {
+            scanner.close();
+        } catch (Exception e) {
+            // Игнорируем ошибки при закрытии
+        }
+
+        System.out.println("Программа завершена.");
+        System.exit(0); // Явное завершение программы
     }
 }
